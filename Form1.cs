@@ -91,7 +91,7 @@ namespace AmazonFaceRekognition_WF
                 DetectFacesResponse detectFacesResponse = await rekognitionClient.DetectFacesAsync(detectFacesRequest);
                 detectFacesResponse.FaceDetails.ForEach(face =>
                 {
-                    ShowBoundingBoxPositions(face.BoundingBox);
+                    ShowBoundingBoxPositions(face.BoundingBox, face.Emotions);
                 });
             }
             catch (Exception ex)
@@ -100,18 +100,28 @@ namespace AmazonFaceRekognition_WF
             }
         }
 
-        public void ShowBoundingBoxPositions(BoundingBox box)
+        public void ShowBoundingBoxPositions(BoundingBox box, List<Emotion> emotions)
         {
+            string emotion = emotions[emotions.LastIndexOf(emotions.Find(e=>e.Confidence== emotions.Max(testc => testc.Confidence)))].Type;
             Bitmap bmp = new Bitmap(pictureBox.Image);
             using (Graphics g = Graphics.FromImage(bmp))
-            using (Pen pen2 = new Pen(Color.Red, 2))
             {
-                int left = (int)(box.Left * bmp.Width);
-                int top = (int)(box.Top * bmp.Height);
-                int width = (int)(box.Width * bmp.Width);
-                int height = (int)(box.Height * bmp.Height);
-                Rectangle rect = new Rectangle(left, top, width, height);
-                g.DrawRectangle(pen2, rect);
+                using (Pen pen2 = new Pen(Color.Red, 2))
+                {
+                    int left = (int)(box.Left * bmp.Width);
+                    int top = (int)(box.Top * bmp.Height);
+                    int width = (int)(box.Width * bmp.Width);
+                    int height = (int)(box.Height * bmp.Height);
+                    Rectangle rect = new Rectangle(left, top, width, height);
+                    Brush brush = new SolidBrush(Color.Red);
+                    StringFormat format = new StringFormat()
+                    {
+                        Alignment = StringAlignment.Center
+                    };
+                    g.DrawString(emotion, new Font("Arial", 10, FontStyle.Regular), brush, rect, format);
+                    g.DrawRectangle(pen2, rect);
+                }
+                
             }
             pictureBox.Image = bmp;
         }
